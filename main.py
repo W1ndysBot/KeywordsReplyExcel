@@ -1,4 +1,4 @@
-# script/example/main.py
+# script/KeywordsReplyExcel/main.py
 
 import logging
 import os
@@ -14,22 +14,22 @@ from app.api import *
 from app.switch import load_switch, save_switch
 
 
-# 数据存储路径，实际开发时，请将Example替换为具体的数据存放路径
+# 数据存储路径，实际开发时，请将KeywordsReplyExcel替换为具体的数据存放路径
 DATA_DIR = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
     "data",
-    "Example",
+    "KeywordsReplyExcel",
 )
 
 
 # 查看功能开关状态
 def load_function_status(group_id):
-    return load_switch(group_id, "Example")
+    return load_switch(group_id, "KeywordsReplyExcel")
 
 
 # 保存功能开关状态
 def save_function_status(group_id, status):
-    save_switch(group_id, "Example", status)
+    save_switch(group_id, "KeywordsReplyExcel", status)
 
 
 # 处理开关状态
@@ -38,7 +38,7 @@ async def toggle_function_status(websocket, group_id, message_id, authorized):
         await send_group_msg(
             websocket,
             group_id,
-            f"[CQ:reply,id={message_id}]❌❌❌你没有权限对Example功能进行操作,请联系管理员。",
+            f"[CQ:reply,id={message_id}]❌❌❌你没有权限对KeywordsReplyExcel功能进行操作,请联系管理员。",
         )
         return
 
@@ -47,17 +47,19 @@ async def toggle_function_status(websocket, group_id, message_id, authorized):
         await send_group_msg(
             websocket,
             group_id,
-            f"[CQ:reply,id={message_id}]🚫🚫🚫Example功能已关闭",
+            f"[CQ:reply,id={message_id}]🚫🚫🚫KeywordsReplyExcel功能已关闭",
         )
     else:
         save_function_status(group_id, True)
         await send_group_msg(
-            websocket, group_id, f"[CQ:reply,id={message_id}]✅✅✅Example功能已开启"
+            websocket,
+            group_id,
+            f"[CQ:reply,id={message_id}]✅✅✅KeywordsReplyExcel功能已开启",
         )
 
 
 # 群消息处理函数
-async def handle_Example_group_message(websocket, msg):
+async def handle_KeywordsReplyExcel_group_message(websocket, msg):
     # 确保数据目录存在
     os.makedirs(DATA_DIR, exist_ok=True)
     try:
@@ -68,17 +70,17 @@ async def handle_Example_group_message(websocket, msg):
         message_id = str(msg.get("message_id"))
 
     except Exception as e:
-        logging.error(f"处理Example群消息失败: {e}")
+        logging.error(f"处理KeywordsReplyExcel群消息失败: {e}")
         await send_group_msg(
             websocket,
             group_id,
-            "处理Example群消息失败，错误信息：" + str(e),
+            "处理KeywordsReplyExcel群消息失败，错误信息：" + str(e),
         )
         return
 
 
 # 群通知处理函数
-async def handle_Example_group_notice(websocket, msg):
+async def handle_KeywordsReplyExcel_group_notice(websocket, msg):
     # 确保数据目录存在
     os.makedirs(DATA_DIR, exist_ok=True)
     try:
@@ -89,17 +91,17 @@ async def handle_Example_group_notice(websocket, msg):
         message_id = str(msg.get("message_id"))
 
     except Exception as e:
-        logging.error(f"处理Example群通知失败: {e}")
+        logging.error(f"处理KeywordsReplyExcel群通知失败: {e}")
         await send_group_msg(
             websocket,
             group_id,
-            "处理Example群通知失败，错误信息：" + str(e),
+            "处理KeywordsReplyExcel群通知失败，错误信息：" + str(e),
         )
         return
 
 
 # 回应事件处理函数
-async def handle_Example_response_message(websocket, message):
+async def handle_KeywordsReplyExcel_response_message(websocket, message):
     try:
         msg = json.loads(message)
 
@@ -109,4 +111,4 @@ async def handle_Example_response_message(websocket, message):
             if echo and echo.startswith("xxx"):
                 pass
     except Exception as e:
-        logging.error(f"处理Example回应事件时发生错误: {e}")
+        logging.error(f"处理KeywordsReplyExcel回应事件时发生错误: {e}")
