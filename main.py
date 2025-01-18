@@ -3,7 +3,7 @@
 import logging
 import os
 import sys
-import pandas as pd
+import xlrd
 
 # 添加项目根目录到sys.path
 sys.path.append(
@@ -39,13 +39,23 @@ async def handle_meta_event(websocket, msg):
 
 
 # 在Excel寻找符合的关键词回复数据
-def find_keywords_reply(keywords):
-    # 设置Excel文件路径
-    excel_path = os.path.join(DATA_DIR, "keywords_reply.xlsx")
-    # 读取Excel文件
-    df = pd.read_excel(excel_path)
-    # 寻找符合的关键词回复数据
-    return df[df["keywords"].str.contains(keywords)]
+def get_first_and_second_column_values_by_keyword(keyword):
+    # 获取第一张表
+    df = xlrd.open_workbook(os.path.join(DATA_DIR, "data.xls"))
+    sheet = df.sheet_by_index(0)
+    # 初始化结果列表
+    result = []
+    # 遍历所有行
+    for row_idx in range(sheet.nrows):
+        # 获取第一行的值
+        first_col_value = sheet.cell_value(row_idx, 0)
+        # 检查第一列是否包含关键字
+        if keyword in str(first_col_value):
+            # 如果包含，获取第二列的值
+            second_col_value = sheet.cell_value(row_idx, 1)
+            # 将第一列和第二列的值作为元组添加到结果列表
+            result.append((first_col_value, second_col_value))
+    return result
 
 
 # 处理开关状态
@@ -90,47 +100,15 @@ async def handle_KeywordsReplyExcel_group_message(websocket, msg):
         if raw_message.startswith("kre"):
             await toggle_function_status(websocket, group_id, message_id, authorized)
         else:
-            find_keywords_reply(raw_message)
+            message = f"[CQ:reply,id={message_id}]"
+            # 获取关键词回复数据
+            for item in get_first_and_second_column_values_by_keyword(raw_message):
+                message += f"文件名: {item[0]} -> 链接: {item[1]}\n"
+            await send_group_msg(
+                websocket,
+                group_id,
+                message,
+            )
     except Exception as e:
         logging.error(f"处理KeywordsReplyExcel群消息失败: {e}")
-        await send_group_msg(
-            websocket,
-            group_id,
-            "处理KeywordsReplyExcel群消息失败，错误信息：" + str(e),
-        )
         return
-
-
-# 群通知处理函数
-async def handle_KeywordsReplyExcel_group_notice(websocket, msg):
-    # 确保数据目录存在
-    os.makedirs(DATA_DIR, exist_ok=True)
-    try:
-        user_id = str(msg.get("user_id"))
-        group_id = str(msg.get("group_id"))
-        raw_message = str(msg.get("raw_message"))
-        role = str(msg.get("sender", {}).get("role"))
-        message_id = str(msg.get("message_id"))
-
-    except Exception as e:
-        logging.error(f"处理KeywordsReplyExcel群通知失败: {e}")
-        await send_group_msg(
-            websocket,
-            group_id,
-            "处理KeywordsReplyExcel群通知失败，错误信息：" + str(e),
-        )
-        return
-
-
-# 回应事件处理函数
-async def handle_KeywordsReplyExcel_response_message(websocket, message):
-    try:
-        msg = json.loads(message)
-
-        if msg.get("status") == "ok":
-            echo = msg.get("echo")
-
-            if echo and echo.startswith("xxx"):
-                pass
-    except Exception as e:
-        logging.error(f"处理KeywordsReplyExcel回应事件时发生错误: {e}")
