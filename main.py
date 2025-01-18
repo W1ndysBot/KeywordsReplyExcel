@@ -3,6 +3,7 @@
 import logging
 import os
 import sys
+import pandas as pd
 
 # 添加项目根目录到sys.path
 sys.path.append(
@@ -30,6 +31,21 @@ def load_function_status(group_id):
 # 保存功能开关状态
 def save_function_status(group_id, status):
     save_switch(group_id, "KeywordsReplyExcel", status)
+
+
+# 处理元事件，用于启动时确保数据目录存在
+async def handle_meta_event(websocket, msg):
+    os.makedirs(DATA_DIR, exist_ok=True)
+
+
+# 在Excel寻找符合的关键词回复数据
+def find_keywords_reply(keywords):
+    # 设置Excel文件路径
+    excel_path = os.path.join(DATA_DIR, "keywords_reply.xlsx")
+    # 读取Excel文件
+    df = pd.read_excel(excel_path)
+    # 寻找符合的关键词回复数据
+    return df[df["keywords"].str.contains(keywords)]
 
 
 # 处理开关状态
@@ -74,8 +90,7 @@ async def handle_KeywordsReplyExcel_group_message(websocket, msg):
         if raw_message.startswith("kre"):
             await toggle_function_status(websocket, group_id, message_id, authorized)
         else:
-            # 其他处理函数
-            pass
+            find_keywords_reply(raw_message)
     except Exception as e:
         logging.error(f"处理KeywordsReplyExcel群消息失败: {e}")
         await send_group_msg(
