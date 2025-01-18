@@ -34,7 +34,7 @@ def save_function_status(group_id, status):
 
 
 # 处理元事件，用于启动时确保数据目录存在
-async def handle_meta_event(websocket, msg):
+async def handle_KeywordsReplyExcel_meta_event(websocket, msg):
     os.makedirs(DATA_DIR, exist_ok=True)
 
 
@@ -102,13 +102,15 @@ async def handle_KeywordsReplyExcel_group_message(websocket, msg):
         else:
             message = f"[CQ:reply,id={message_id}]"
             # 获取关键词回复数据
-            for item in get_first_and_second_column_values_by_keyword(raw_message):
-                message += f"文件名: {item[0]} -> 链接: {item[1]}\n"
-            await send_group_msg(
-                websocket,
-                group_id,
-                message,
-            )
+            results = get_first_and_second_column_values_by_keyword(raw_message)
+            if results:
+                for item in results:
+                    message += f"文件名: {item[0]} -> 链接: {item[1]}\n"
+                await send_group_msg(
+                    websocket,
+                    group_id,
+                    message,
+                )
     except Exception as e:
         logging.error(f"处理KeywordsReplyExcel群消息失败: {e}")
         return
